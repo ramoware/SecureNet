@@ -89,6 +89,141 @@ has_access = rbac.check_permission("alice", "view_logs")
 print(f"👤 Alice can view logs: {has_access}")
 ```
 
+## 📊 Example Outputs
+
+### 🖥️ Main Application Output
+```bash
+$ python src/main.py
+2024-01-15 10:30:45 - __main__ - INFO - 🚀 Starting SecureNet Security Automation System
+2024-01-15 10:30:45 - auth.rbac - INFO - ✅ RBAC database initialized
+2024-01-15 10:30:45 - auth.rbac - INFO - ✅ Default roles loaded
+2024-01-15 10:30:45 - __main__ - INFO - ✅ RBAC System initialized
+2024-01-15 10:30:45 - network.scanner - INFO - Scanning subnet 192.168.1.0/24 on ports [22, 80, 443, 3389, 5432]
+
+🔍 Network Scan Results:
+   - {'ip_address': '192.168.1.1', 'open_ports': [80, 443], 'status': 'Active'}
+   - {'ip_address': '192.168.1.15', 'open_ports': [22, 80], 'status': 'Active'}
+   - {'ip_address': '192.168.1.23', 'open_ports': [3389], 'status': 'Active'}
+   - {'ip_address': '192.168.1.42', 'open_ports': [5432], 'status': 'Active'}
+
+2024-01-15 10:30:47 - __main__ - INFO - 🛡️ Starting network monitoring...
+2024-01-15 10:30:47 - network.monitor - INFO - Starting network monitoring on interface default
+```
+
+### 🔍 Network Scanning Output
+```python
+>>> from src.network.scanner import NetworkScanner
+>>> scanner = NetworkScanner()
+>>> results = scanner.scan_network("192.168.1.0/24", ports=[22, 80, 443])
+2024-01-15 10:31:22 - network.scanner - INFO - Scanning subnet 192.168.1.0/24 on ports [22, 80, 443]
+2024-01-15 10:31:22 - network.scanner - INFO - Port 80 open on 192.168.1.1
+2024-01-15 10:31:22 - network.scanner - INFO - Port 443 open on 192.168.1.1
+2024-01-15 10:31:23 - network.scanner - INFO - Port 22 open on 192.168.1.15
+2024-01-15 10:31:23 - network.scanner - INFO - Discovered active device: 192.168.1.1 with ports [80, 443]
+2024-01-15 10:31:23 - network.scanner - INFO - Discovered active device: 192.168.1.15 with ports [22]
+
+>>> for device in results:
+...     print(f"📍 {device['ip_address']} - Ports: {device['open_ports']}")
+... 
+📍 192.168.1.1 - Ports: [80, 443]
+📍 192.168.1.15 - Ports: [22]
+```
+
+### 🛡️ Security Monitoring Output
+```python
+>>> from src.network.monitor import NetworkMonitor
+>>> monitor = NetworkMonitor(alert_threshold=5)  # Low threshold for demo
+>>> # Simulating some network traffic
+>>> monitor.packet_count = 6  # Simulate high traffic
+>>> monitor.trigger_alert("High packet volume detected")
+2024-01-15 10:32:15 - network.monitor - WARNING - 🚨 SECURITY ALERT: High packet volume detected
+
+>>> report = monitor.get_security_report()
+>>> print("📈 Security Report:")
+>>> for key, value in report.items():
+...     print(f"   {key}: {value}")
+...
+📈 Security Report:
+   total_packets_analyzed: 6
+   alerts_triggered: 1
+   recent_alerts: [{'timestamp': '2024-01-15T10:32:15.123456', 'message': 'High packet volume detected', 'packet_count': 6}]
+```
+
+### 🔐 RBAC System Output
+```python
+>>> from src.auth.rbac import RBAC
+>>> rbac = RBAC()
+
+>>> # User management
+>>> rbac.assign_role("alice", "admin")
+2024-01-15 10:33:22 - auth.rbac - INFO - ✅ Role 'admin' assigned to user 'alice'
+>>> rbac.assign_role("bob", "analyst")
+2024-01-15 10:33:25 - auth.rbac - INFO - ✅ Role 'analyst' assigned to user 'bob'
+>>> rbac.assign_role("charlie", "viewer")
+2024-01-15 10:33:28 - auth.rbac - INFO - ✅ Role 'viewer' assigned to user 'charlie'
+
+>>> # Permission checks
+>>> print("🔐 Permission Check Results:")
+>>> print(f"Alice (Admin) - manage_users: {rbac.check_permission('alice', 'manage_users')}")
+>>> print(f"Bob (Analyst) - view_logs: {rbac.check_permission('bob', 'view_logs')}")
+>>> print(f"Bob (Analyst) - manage_users: {rbac.check_permission('bob', 'manage_users')}")
+>>> print(f"Charlie (Viewer) - read: {rbac.check_permission('charlie', 'read')}")
+🔐 Permission Check Results:
+Alice (Admin) - manage_users: True
+Bob (Analyst) - view_logs: True
+Bob (Analyst) - manage_users: False
+Charlie (Viewer) - read: True
+
+>>> # Session management
+>>> session_id = rbac.create_session("alice")
+2024-01-15 10:34:15 - auth.rbac - INFO - 🆕 Session 1 created for user 'alice'
+>>> print(f"Session ID: {session_id}")
+Session ID: 1
+
+>>> # Get user permissions
+>>> permissions = rbac.get_user_permissions("alice")
+>>> print(f"Alice's permissions: {', '.join(permissions)}")
+Alice's permissions: read, write, delete, manage_users, view_logs
+```
+
+### 🚨 Security Alert Output
+```bash
+# Real-time monitoring detecting suspicious activity
+2024-01-15 10:35:45 - network.monitor - DEBUG - TCP SYN packet detected from 192.168.1.99
+2024-01-15 10:35:46 - network.monitor - DEBUG - TCP SYN packet detected from 192.168.1.99
+2024-01-15 10:35:47 - network.monitor - DEBUG - TCP SYN packet detected from 192.168.1.99
+2024-01-15 10:35:48 - network.monitor - WARNING - 🚨 SECURITY ALERT: Multiple SYN packets detected from 192.168.1.99 - Possible port scanning
+2024-01-15 10:35:48 - network.monitor - INFO - ICMP packet from 192.168.1.99
+```
+
+### 📋 Role-Based Access Demo
+```python
+>>> from src.auth.rbac import RBAC, SecureOperations
+>>> rbac = RBAC()
+>>> rbac.assign_role("eve", "analyst")
+
+>>> # Create secure operations instance
+>>> secure_ops = SecureOperations(rbac, "eve")
+
+>>> # Try to view logs (allowed for analysts)
+>>> try:
+...     result = secure_ops.view_security_logs()
+...     print(f"✅ {result}")
+... except PermissionError as e:
+...     print(f"❌ {e}")
+...
+✅ Displaying security logs for eve
+
+>>> # Try to create user (not allowed for analysts)
+>>> try:
+...     result = secure_ops.create_user("new_user")
+...     print(f"✅ {result}")
+... except PermissionError as e:
+...     print(f"❌ {e}")
+...
+❌ User 'eve' lacks required permission: manage_users
+```
+
 ## 🎯 Key Features
 
 ### 🕵️ Automated Threat Detection
