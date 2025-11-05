@@ -1,0 +1,11 @@
+# Security & Networking
+scapy==2.5.0
+requests==2.31.0
+
+# Database
+sqlite3
+
+# Utilities
+python-dotenv==1.0.0
+logging
+datetime
